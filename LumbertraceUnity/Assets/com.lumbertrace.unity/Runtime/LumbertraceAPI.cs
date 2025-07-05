@@ -4,7 +4,6 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using Task = System.Threading.Tasks.Task;
 
@@ -26,7 +25,7 @@ namespace Lumbertrace.Unity
             private string stacktrace;
             // ReSharper disable once InconsistentNaming
             [SerializeField]
-            private LogType type;
+            private string logType;
             // ReSharper disable once InconsistentNaming
             [SerializeField]
             private long time;
@@ -35,7 +34,7 @@ namespace Lumbertrace.Unity
             {
                 this.message = message;
                 this.stacktrace = stacktrace;
-                this.type = type;
+                this.logType = type.ToString();
                 this.time = time.Ticks;
             }
         }
@@ -56,7 +55,7 @@ namespace Lumbertrace.Unity
         }
         
         
-        public static async Task TryStartLogSessionAsync(ILumbertraceConfig config,
+        public static async System.Threading.Tasks.Task<LumbertraceAPI> TryStartLogSessionAsync(ILumbertraceConfig config,
             LumbertraceClientDetails clientDetails, CancellationToken ct = default)
         {
             var api = new LumbertraceAPI();
@@ -70,7 +69,7 @@ namespace Lumbertrace.Unity
                 if (authenticated == false)
                 {
                     Debug.LogError("Failed to authenticate with Lumbertrace API.");
-                    return;
+                    return null;
                 }
 
                 string token = authResponse.SessionAuthToken;
@@ -93,6 +92,8 @@ namespace Lumbertrace.Unity
                 api.Dispose();     
                 throw;
             }
+
+            return api;
         }
 
         private void StartSendLogTask(Uri wsUri, CancellationToken ct)
@@ -122,8 +123,6 @@ namespace Lumbertrace.Unity
         
         private async Task SendLoopAsync(Uri wsUri, CancellationToken ct)
         {
-            var buffer = new ArraySegment<byte>(new byte[8192]);
-
             try
             {
                 while (ct.IsCancellationRequested == false && _webSocket != null && _webSocket.State == WebSocketState.Open)

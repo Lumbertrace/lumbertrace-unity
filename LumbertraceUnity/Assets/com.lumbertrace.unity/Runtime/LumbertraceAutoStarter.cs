@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -13,8 +14,9 @@ namespace Lumbertrace.Unity
 
         private CancellationTokenSource _cts;
         private LumbertraceAPI _apiInstance;
+        private LumbertraceAPI _api;
 
-        private void Awake()
+        private async void Awake()
         {
             Debug.Log("[Lumbertrace] Auto-starting log session...");
             _cts = new CancellationTokenSource();
@@ -22,22 +24,42 @@ namespace Lumbertrace.Unity
             ILumbertraceConfig config = new LumberTraceConfig(projectId, apiKey, endpoint: endpoint, wsEndpoint: wsEndpoint);
             var clientDetails = LumbertraceClientDetails.CreateWithAutoFill();
             
-            Task.Run(async () =>
+            _api = await StartSession(config, clientDetails, _cts.Token);
+        }
+
+        private static async Task<LumbertraceAPI> StartSession(ILumbertraceConfig config,
+            LumbertraceClientDetails clientDetails, CancellationToken token = default)
+        {
+            LumbertraceAPI api = null;
+            
+            try
             {
-                try
+                api = await LumbertraceAPI.TryStartLogSessionAsync(config, clientDetails, token);
+
+                if (token.IsCancellationRequested == true)
                 {
-                    await LumbertraceAPI.TryStartLogSessionAsync(config, clientDetails, _cts.Token);
-                    Debug.Log("[Lumbertrace] Log session started successfully.");
+                    api?.Dispose();
+                    return null;
                 }
-                catch (TaskCanceledException)
-                {
-                    Debug.Log("[Lumbertrace] Log session start was cancelled.");
-                }
-                catch (System.Exception ex)
-                {
-                    Debug.LogError($"[Lumbertrace] Failed to start log session: {ex}");
-                }
-            });
+                
+                Debug.Log("[Lumbertrace] Log session started successfully.");
+            }
+            catch (TaskCanceledException)
+            {
+                Debug.Log("[Lumbertrace] Log session start was cancelled.");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[Lumbertrace] Failed to start log session: {ex}");
+            }
+            
+            return api;
+        }
+
+
+        private void Update()
+        {
+            Debug.Log("[Lumbertrace] Auto-starting log session message.");
         }
 
         private void OnDestroy()
@@ -46,6 +68,7 @@ namespace Lumbertrace.Unity
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = null;
+            _api?.Dispose();
         }
     }
 }

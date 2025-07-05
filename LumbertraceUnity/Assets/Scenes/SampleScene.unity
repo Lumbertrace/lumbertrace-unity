@@ -149,7 +149,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   endpoint: http://localhost:5214
-  apiKey: 17eb613e-d549-48e3-b19e-edc2318184b1
+  wsEndpoint: ws://localhost:5214
+  apiKey: 77336073-e975-4232-90ca-9cc88e07584d
+  projectId: 6a32c61d-ec40-43c6-b27d-b2ee82335755
 --- !u!4 &205343677
 Transform:
   m_ObjectHideFlags: 0
