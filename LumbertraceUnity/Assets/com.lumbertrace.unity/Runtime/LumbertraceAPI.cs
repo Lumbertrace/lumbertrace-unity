@@ -73,7 +73,7 @@ namespace Lumbertrace.Unity
                 }
 
                 string token = authResponse.SessionAuthToken;
-                string baseUrl = Path.Combine(config.WsEndpoint, "api", "ws", "logs");
+                string baseUrl = $"{config.WsEndpoint.TrimEnd('/')}/api/ws/logs";
                 string fullUrl = $"{baseUrl}?token={Uri.EscapeDataString(token)}";
                 Uri wsUri = new Uri(fullUrl);
                 await api.ConnectToSessionAsync(wsUri, ct);

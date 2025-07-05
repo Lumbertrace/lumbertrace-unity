@@ -60,7 +60,7 @@ namespace Lumbertrace.Unity
             LumbertraceClientDetails clientDetails,
             CancellationToken ct = default)
         {
-            string url = Path.Combine(endpoint, "api", "auth", "session");
+            string url = $"{endpoint.TrimEnd('/')}/api/auth/session";
             AuthRequest authRequest = AuthRequest.CreateFromClientDetails(projectId, apiKey, clientDetails);
             string json = JsonUtility.ToJson(authRequest);
 
@@ -68,7 +68,7 @@ namespace Lumbertrace.Unity
             using var request = await UnityMainThread.Run(() =>
             {
                 Debug.Log(json);
-                
+                Debug.Log(url);
                 var r = new UnityWebRequest(url, "POST");
                 byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(json);
                 r.uploadHandler = new UploadHandlerRaw(jsonBytes);
