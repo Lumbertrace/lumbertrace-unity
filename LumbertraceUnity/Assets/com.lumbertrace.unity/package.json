@@ -1,0 +1,12 @@
+{
+  "name": "com.lumbertrace.unity",
+  "displayName": "Lumbertrace",
+  "version": "1.0.0",
+  "unity": "2020.3",
+  "description": "Lumbtrace api interface for the backend.",
+  "dependencies": {},
+  "relatedPackages": {},
+  "author": {
+    "name": "Ceejay Smith"
+  }
+}
