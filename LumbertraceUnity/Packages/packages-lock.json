@@ -147,11 +147,11 @@
       "url": "https://packages.unity.com"
     },
     "io.finalclick.unitythread": {
-      "version": "https://github.com/FinalClick/io.finalclick.unitythread.git?path=/Assets/Package",
+      "version": "1.0.0",
       "depth": 0,
-      "source": "git",
+      "source": "registry",
       "dependencies": {},
-      "hash": "24ea75ff4544bcf00718d52658c94e3647c56de4"
+      "url": "https://package.openupm.com"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",

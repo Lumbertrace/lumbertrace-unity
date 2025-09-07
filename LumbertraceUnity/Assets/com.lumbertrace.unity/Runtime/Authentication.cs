@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using FinalClic.UnityThread;
+using FinalClick.UnityThread;
 using UnityEngine;
 using UnityEngine.Networking;
 
