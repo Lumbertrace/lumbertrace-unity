@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
+using FinalClic.UnityThread;
 using UnityEngine;
 using Task = System.Threading.Tasks.Task;
 
