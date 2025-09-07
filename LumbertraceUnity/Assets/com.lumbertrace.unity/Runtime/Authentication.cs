@@ -79,17 +79,10 @@ namespace Lumbertrace.Unity
             });
 
             try
-            {
-               Task<UnityWebRequest.Result> resultTask = await UnityMainThread.Run(async () =>
-                {
-                    await request.SendWebRequest();
-                    return request.result;
-                });
+            { 
+                UnityWebRequest.Result result = await UnityMainThread.Run(async () => await SendWebRequestAsync(request));
                 
-               var result = await resultTask;
-               
                 ct.ThrowIfCancellationRequested();
-                
 
                 if (result == UnityWebRequest.Result.Success)
                 {
@@ -104,7 +97,8 @@ namespace Lumbertrace.Unity
 
                     return (true, response);
                 }
-
+                
+                // Must run on main thread when accessing responseCode and error.
                 await UnityMainThread.Run(() =>
                 {
                     Debug.LogError($"Lumbertrace.AuthenticateAsync failed: {request.responseCode} {request.error}");
@@ -121,6 +115,19 @@ namespace Lumbertrace.Unity
                 Debug.LogError($"Lumbertrace.AuthenticateAsync exception: {ex}");
                 return (false, null);
             }
+        }
+        
+        public static Task<UnityWebRequest.Result> SendWebRequestAsync(UnityWebRequest request)
+        {
+            var tcs = new TaskCompletionSource<UnityWebRequest.Result>();
+
+            var operation = request.SendWebRequest();
+            operation.completed += _ =>
+            {
+                tcs.TrySetResult(request.result);
+            };
+
+            return tcs.Task;
         }
         
         private static string TrimQuotes(string input)
