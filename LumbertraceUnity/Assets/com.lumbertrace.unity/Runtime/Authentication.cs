@@ -1,9 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using FinalClick.UnityThread;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -51,10 +49,20 @@ namespace Lumbertrace.Unity
                 SessionAuthToken = sessionAuthToken;
             }
         }
-        
-        
 
-        internal static async Task<(bool success, AuthenticateResponse response)> AuthenticateAsync(
+        private static UnityWebRequest CreateAuthenticateRequestAsync(string url, AuthRequest authRequest)
+        {
+            string json = JsonUtility.ToJson(authRequest);
+            
+            var r = new UnityWebRequest(url, "POST");
+            byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(json);
+            r.uploadHandler = new UploadHandlerRaw(jsonBytes);
+            r.downloadHandler = new DownloadHandlerBuffer();
+            r.SetRequestHeader("Content-Type", "application/json");
+            return r;
+        }
+
+        internal static async Awaitable<(bool success, AuthenticateResponse response)> AuthenticateAsync(
             string endpoint,
             string projectId,
             string apiKey,
@@ -63,48 +71,34 @@ namespace Lumbertrace.Unity
         {
             string url = $"{endpoint.TrimEnd('/')}/api/auth/session";
             AuthRequest authRequest = AuthRequest.CreateFromClientDetails(projectId, apiKey, clientDetails);
-            string json = JsonUtility.ToJson(authRequest);
 
-
-            using var request = await UnityMainThread.Run(() =>
-            {
-                Debug.Log(json);
-                Debug.Log(url);
-                var r = new UnityWebRequest(url, "POST");
-                byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(json);
-                r.uploadHandler = new UploadHandlerRaw(jsonBytes);
-                r.downloadHandler = new DownloadHandlerBuffer();
-                r.SetRequestHeader("Content-Type", "application/json");
-                return r;
-            });
-
+            using UnityWebRequest request = CreateAuthenticateRequestAsync(url, authRequest);
             try
             { 
-                UnityWebRequest.Result result = await UnityMainThread.Run(async () => await SendWebRequestAsync(request));
+                bool success = await request.SendWebRequestAwaitable(ct);
+                UnityWebRequest.Result result = request.result;
                 
                 ct.ThrowIfCancellationRequested();
 
-                if (result == UnityWebRequest.Result.Success)
+                if (success == false || result != UnityWebRequest.Result.Success)
                 {
-                    AuthenticateResponse response = await UnityMainThread.Run(() =>
-                    {
-                        string responseText = request.downloadHandler.text;
-                        string token = TrimQuotes(responseText);
-
-                        AuthenticateResponse authResponse = new AuthenticateResponse(token);
-                        return authResponse;
-                    });
-
-                    return (true, response);
+                    // Must run on main thread when accessing responseCode and error.
+                    await Awaitable.MainThreadAsync();
+                    Debug.LogError($"Lumbertrace.AuthenticateAsync failed: {request.responseCode} {request.error}");
+                    return (false, null);
                 }
                 
-                // Must run on main thread when accessing responseCode and error.
-                await UnityMainThread.Run(() =>
-                {
-                    Debug.LogError($"Lumbertrace.AuthenticateAsync failed: {request.responseCode} {request.error}");
-                    return Task.CompletedTask;
-                });
-                return (false, null);
+                Debug.Assert(request.result == UnityWebRequest.Result.Success, "Result was not a success");
+                
+                // Must run on main thread to access request downloadHandler.
+                await Awaitable.MainThreadAsync();
+                string responseText = request.downloadHandler.text;
+                string token = TrimQuotes(responseText);
+
+                AuthenticateResponse response = new AuthenticateResponse(token);
+
+                return (true, response);
+
             }
             catch (OperationCanceledException)
             {

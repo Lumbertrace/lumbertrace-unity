@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
-using FinalClick.UnityThread;
 using UnityEngine;
 using Task = System.Threading.Tasks.Task;
 
@@ -48,19 +46,17 @@ namespace Lumbertrace.Unity
 
         private LumbertraceAPI()
         {
-            UnityMainThread.Run(() =>
-            {
-                Application.logMessageReceived += HandleLog;
-                return Task.CompletedTask;
-            });
         }
         
-        
-        public static async System.Threading.Tasks.Task<LumbertraceAPI> TryStartLogSessionAsync(ILumbertraceConfig config,
+        public static async Awaitable<LumbertraceAPI> TryStartSessionAsync(ILumbertraceConfig config,
             LumbertraceClientDetails clientDetails, CancellationToken ct = default)
         {
             var api = new LumbertraceAPI();
 
+            // Ensure we are on the main thread to access Application.logMessageReceived.
+            await Awaitable.MainThreadAsync();
+            Application.logMessageReceived += api.HandleLog;
+            
             try
             {
                 (bool authenticated, Authentication.AuthenticateResponse authResponse) = await Authentication.AuthenticateAsync(config.Endpoint, config.ProjectId, config.ApiKey, clientDetails, ct);
@@ -73,11 +69,9 @@ namespace Lumbertrace.Unity
                     return null;
                 }
 
-                string token = authResponse.SessionAuthToken;
-                string baseUrl = $"{config.WsEndpoint.TrimEnd('/')}/api/ws/logs";
-                string fullUrl = $"{baseUrl}?token={Uri.EscapeDataString(token)}";
-                Uri wsUri = new Uri(fullUrl);
+                var wsUri = CreateConnectToSessionUri(config, authResponse);
                 await api.ConnectToSessionAsync(wsUri, ct);
+                
                 ct.ThrowIfCancellationRequested();
                 
                 api.StartSendLogTask(wsUri, ct);
@@ -95,6 +89,15 @@ namespace Lumbertrace.Unity
             }
 
             return api;
+        }
+
+        private static Uri CreateConnectToSessionUri(ILumbertraceConfig config, Authentication.AuthenticateResponse authResponse)
+        {
+            string token = authResponse.SessionAuthToken;
+            string baseUrl = $"{config.WsEndpoint.TrimEnd('/')}/api/ws/logs";
+            string fullUrl = $"{baseUrl}?token={Uri.EscapeDataString(token)}";
+            Uri wsUri = new Uri(fullUrl);
+            return wsUri;
         }
 
         private void StartSendLogTask(Uri wsUri, CancellationToken ct)
@@ -220,13 +223,16 @@ namespace Lumbertrace.Unity
             DisconnectWebSocket();
         }
 
+        private async Awaitable RemoveLogHookAwaitable()
+        {
+            await Awaitable.MainThreadAsync();
+            Application.logMessageReceived -= HandleLog;
+        }
+        
         public void Dispose()
         {
-            UnityMainThread.Run(() =>
-            {
-                Application.logMessageReceived -= HandleLog;
-                return Task.CompletedTask;
-            });
+            // fire and forget.
+            _ = RemoveLogHookAwaitable();
             
             _cts?.Cancel();
             _cts?.Dispose();

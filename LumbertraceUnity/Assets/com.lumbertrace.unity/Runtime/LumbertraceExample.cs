@@ -5,10 +5,10 @@ using UnityEngine;
 
 namespace Lumbertrace.Unity
 {
-    public class LumbertraceAutoStarter : MonoBehaviour
+    public class LumbertraceExample : MonoBehaviour
     {
-        [SerializeField] private string endpoint = "https://your-lumbertrace-endpoint.com";
-        [SerializeField] private string wsEndpoint = "ws://your-lumbertrace-endpoint.com";
+        [SerializeField] private string endpoint = "https://api.lumbertrace.co.uk";
+        [SerializeField] private string wsEndpoint = "wss://api.lumbertrace.co.uk";
         [SerializeField] private string apiKey = "your-api-key-here";
         [SerializeField] private string projectId = "your-project-id-here";
 
@@ -35,7 +35,7 @@ namespace Lumbertrace.Unity
             
             try
             {
-                api = await LumbertraceAPI.TryStartLogSessionAsync(config, clientDetails, token);
+                api = await LumbertraceAPI.TryStartSessionAsync(config, clientDetails, token);
 
                 if (token.IsCancellationRequested == true)
                 {
@@ -88,7 +88,9 @@ namespace Lumbertrace.Unity
                     Debug.LogError($"[Lumbertrace] Error: Something failed at {DateTime.Now:HH:mm:ss.fff}");
                     break;
             }
-        }        private void OnDestroy()
+        }        
+        
+        private void OnDestroy()
         {
             Debug.Log("[Lumbertrace] Shutting down log session...");
             _cts?.Cancel();

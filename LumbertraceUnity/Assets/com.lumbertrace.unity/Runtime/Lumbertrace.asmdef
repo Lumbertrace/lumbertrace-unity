@@ -1,9 +1,7 @@
 {
     "name": "Lumbertrace",
     "rootNamespace": "Lumbertrace.Unity",
-    "references": [
-        "GUID:ca83fe43392dc4506ac44d5a8c7cdf5b"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
