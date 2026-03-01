@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 205343677}
   - component: {fileID: 205343676}
+  - component: {fileID: 205343678}
   m_Layer: 0
   m_Name: Lumbertrace
   m_TagString: Untagged
@@ -148,10 +149,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ebd5fc5b09546ab82badb236d3a423a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  endpoint: https://api.lumbertrace.co.uk
-  wsEndpoint: wss://api.lumbertrace.co.uk
-  apiKey: a6a13078-3ba7-44b6-be01-262276c45cea
-  projectId: 9410fb93-f989-4c60-b2a2-5c39050de3ef
+  endpoint: http://localhost:5214
+  wsEndpoint: ws://localhost:5214
+  apiKey: cbfb852f-c997-4e91-b8ed-4465875cf15d
+  projectId: 07d677cf-17ac-4ccc-8ec8-657732e21bfa
 --- !u!4 &205343677
 Transform:
   m_ObjectHideFlags: 0
@@ -167,6 +168,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &205343678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 205343675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 562537af805e42dc84ea103086b406a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lumbertrace.Unity.LumbertraceLoggingSpammer
+  _timeBetweenLogsInSeconds: 0.2
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -330,14 +344,14 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   m_Enabled: 1
-  serializedVersion: 11
+  serializedVersion: 12
   m_Type: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 2
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
-  m_CookieSize: 10
+  m_CookieSize2D: {x: 10, y: 10}
   m_Shadows:
     m_Type: 2
     m_Resolution: -1

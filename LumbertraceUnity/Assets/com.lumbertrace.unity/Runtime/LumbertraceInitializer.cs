@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Lumbertrace.Unity
 {
-    public class LumbertraceExample : MonoBehaviour
+    public class LumbertraceInitializer : MonoBehaviour
     {
         [SerializeField] private string endpoint = "https://api.lumbertrace.co.uk";
         [SerializeField] private string wsEndpoint = "wss://api.lumbertrace.co.uk";
@@ -15,11 +15,10 @@ namespace Lumbertrace.Unity
         private CancellationTokenSource _cts;
         private LumbertraceAPI _apiInstance;
         private LumbertraceAPI _api;
-         private float _logTimer;
 
         private async void Awake()
         {
-            Debug.Log("[Lumbertrace] Auto-starting log session...");
+            Debug.Log("[Lumbertrace] Attempting to create a new session...");
             _cts = new CancellationTokenSource();
 
             ILumbertraceConfig config = new LumberTraceConfig(projectId, apiKey, endpoint: endpoint, wsEndpoint: wsEndpoint);
@@ -58,38 +57,6 @@ namespace Lumbertrace.Unity
             return api;
         }
 
-
-        private void Update()
-        {
-            if (_api == null) return;
-
-            // Emit logs every 1 second
-            _logTimer += Time.deltaTime;
-            if (_logTimer >= 0.2f)
-            {
-                EmitRandomLog();
-                _logTimer = 0f;
-            }
-        }
-
-        private void EmitRandomLog()
-        {
-            int logType = UnityEngine.Random.Range(0, 3);
-
-            switch (logType)
-            {
-                case 0:
-                    Debug.Log($"[Lumbertrace] Info log at {DateTime.Now:HH:mm:ss.fff}");
-                    break;
-                case 1:
-                    Debug.LogWarning($"[Lumbertrace] Warning: Something might be wrong at {DateTime.Now:HH:mm:ss.fff}");
-                    break;
-                case 2:
-                    Debug.LogError($"[Lumbertrace] Error: Something failed at {DateTime.Now:HH:mm:ss.fff}");
-                    break;
-            }
-        }        
-        
         private void OnDestroy()
         {
             Debug.Log("[Lumbertrace] Shutting down log session...");

@@ -69,7 +69,7 @@ namespace Lumbertrace.Unity
             LumbertraceClientDetails clientDetails,
             CancellationToken ct = default)
         {
-            string url = $"{endpoint.TrimEnd('/')}/api/auth/session";
+            string url = $"{endpoint.TrimEnd('/')}/api/game/session/auth";
             AuthRequest authRequest = AuthRequest.CreateFromClientDetails(projectId, apiKey, clientDetails);
 
             using UnityWebRequest request = CreateAuthenticateRequestAsync(url, authRequest);

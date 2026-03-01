@@ -37,7 +37,11 @@ namespace Lumbertrace.Unity
                 this.time = time.Ticks;
             }
         }
-        
+
+
+
+        private const string WebsocketConnectRoute = "/api/game/session/connect";
+                
         private CancellationTokenSource _cts = new CancellationTokenSource();
         
         private ClientWebSocket _webSocket;
@@ -94,7 +98,7 @@ namespace Lumbertrace.Unity
         private static Uri CreateConnectToSessionUri(ILumbertraceConfig config, Authentication.AuthenticateResponse authResponse)
         {
             string token = authResponse.SessionAuthToken;
-            string baseUrl = $"{config.WsEndpoint.TrimEnd('/')}/api/ws/logs";
+            string baseUrl = $"{config.WsEndpoint.TrimEnd('/')}{WebsocketConnectRoute}";
             string fullUrl = $"{baseUrl}?token={Uri.EscapeDataString(token)}";
             Uri wsUri = new Uri(fullUrl);
             return wsUri;
